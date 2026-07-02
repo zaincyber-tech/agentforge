@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentForge</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --red:#E02020;--red-dark:#B01010;--red-glow:rgba(224,32,32,0.12);
+  --black:#0A0A0A;--dark:#111111;--card:#181818;--border:#252525;
+  --text:#F0F0F0;--muted:#777;--white:#FFF;
+  --green:#22C55E;--yellow:#F59E0B;--blue:#3B82F6;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--black);color:var(--text);min-height:100vh;}
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.active{display:flex;}
+.center{flex:1;display:flex;align-items:center;justify-content:center;padding:24px;}
+
+/* NAV */
+.nav{background:var(--dark);border-bottom:1px solid var(--border);padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.nav-logo{display:flex;align-items:center;gap:10px;}
+.nav-mark{width:32px;height:32px;background:var(--red);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:12px;color:#fff;}
+.nav-brand{font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:16px;color:#fff;}
+.nav-brand span{color:var(--red);}
+.btn-nav{background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:7px;font-size:12px;cursor:pointer;transition:all .2s;}
+.btn-nav:hover{border-color:var(--red);color:var(--red);}
+
+/* FORMS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:32px;}
+.lbl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:7px;}
+.inp{width:100%;background:var(--dark);border:1px solid var(--border);border-radius:9px;padding:12px 15px;color:#fff;font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s;margin-bottom:14px;}
+.inp:focus{border-color:var(--red);}
+select.inp{cursor:pointer;}
+.btn{width:100%;background:var(--red);color:#fff;border:none;border-radius:9px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;}
+.btn:hover{background:var(--red-dark);}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text);border-radius:9px;padding:11px 20px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-ghost:hover{border-color:var(--red);color:var(--red);}
+.err{background:rgba(224,32,32,.1);border:1px solid rgba(224,32,32,.3);color:#FF6B6B;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;display:none;}
+
+/* LOGIN */
+#loginScreen{background:var(--black);}
+.login-wrap{width:100%;max-width:400px;}
+.login-header{text-align:center;margin-bottom:28px;}
+.login-mark{width:72px;height:72px;background:var(--red);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:26px;color:#fff;margin-bottom:14px;}
+.login-name{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:800;color:#fff;}
+
+/* LANG SELECT */
+#langScreen{background:var(--black);}
+.lang-wrap{width:100%;max-width:440px;text-align:center;}
+.lang-title{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px;}
+.lang-sub{color:var(--muted);font-size:14px;margin-bottom:28px;}
+.lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.lang-btn{background:var(--card);border:2px solid var(--border);border-radius:12px;padding:20px;cursor:pointer;transition:all .2s;text-align:center;}
+.lang-btn:hover{border-color:var(--red);}
+.lang-btn.sel{border-color:var(--red);background:rgba(224,32,32,.05);}
+.lang-icon{font-size:28px;margin-bottom:8px;}
+.lang-name{font-weight:700;font-size:15px;}
+.lang-native{font-size:12px;color:var(--muted);margin-top:2px;}
+
+/* DASHBOARD */
+#dashScreen{background:var(--black);}
+.dash-wrap{padding:28px 32px;max-width:860px;margin:0 auto;width:100%;}
+.dash-h{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:800;margin-bottom:6px;}
+.dash-sub{color:var(--muted);font-size:14px;margin-bottom:28px;}
+.mod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.mod-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;}
+.mod-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--red);transform:scaleX(0);transition:transform .25s;transform-origin:left;}
+.mod-card:hover:not(.locked){border-color:rgba(224,32,32,.35);transform:translateY(-3px);}
+.mod-card:hover:not(.locked)::after{transform:scaleX(1);}
+.mod-card.locked{opacity:.5;cursor:not-allowed;}
+.mod-icon{font-size:32px;margin-bottom:12px;}
+.mod-title{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;margin-bottom:7px;}
+.mod-desc{font-size:13px;color:var(--muted);line-height:1.6;}
+.mod-tag{display:inline-block;margin-top:12px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;}
+.tag-red{background:rgba(224,32,32,.1);border:1px solid rgba(224,32,32,.2);color:var(--red);}
+.tag-green{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);color:var(--green);}
+.tag-gray{background:rgba(120,120,120,.1);border:1px solid rgba(120,120,120,.2);color:var(--muted);}
+
+/* EDUCATION */
+#eduScreen{background:var(--black);}
+.edu-wrap{padding:24px 28px;max-width:800px;margin:0 auto;width:100%;}
+.back-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:7px;font-size:12px;cursor:pointer;margin-bottom:20px;transition:all .2s;}
+.back-btn:hover{border-color:var(--red);color:var(--red);}
+.prog{display:flex;gap:5px;margin-bottom:24px;}
+.prog-s{flex:1;height:4px;background:var(--border);border-radius:2px;transition:background .3s;}
+.prog-s.active{background:var(--red);}
+.prog-s.done{background:var(--green);}
+.edu-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:28px;margin-bottom:16px;}
+.edu-h{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:var(--red);margin-bottom:18px;}
+
+/* AI CHAT BOX in Education */
+.ai-chat{background:var(--dark);border:1px solid var(--border);border-radius:12px;padding:0;margin-bottom:16px;overflow:hidden;}
+.ai-chat-msgs{padding:16px;min-height:200px;max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+.ai-msg{background:var(--card);border:1px solid var(--border);border-radius:10px 10px 10px 3px;padding:10px 14px;font-size:13px;line-height:1.6;max-width:85%;align-self:flex-start;}
+.user-msg{background:var(--red);border-radius:10px 10px 3px 10px;padding:10px 14px;font-size:13px;line-height:1.6;max-width:85%;align-self:flex-end;}
+.ai-chat-input{border-top:1px solid var(--border);padding:10px 14px;display:flex;gap:8px;align-items:center;}
+.mic-toggle{width:38px;height:38px;border-radius:50%;background:var(--red);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s;flex-shrink:0;}
+.mic-toggle.muted{background:var(--border);}
+.mic-toggle.active{animation:mic-pulse 1s infinite;}
+@keyframes mic-pulse{0%,100%{box-shadow:0 0 0 0 rgba(224,32,32,.4);}50%{box-shadow:0 0 0 8px rgba(224,32,32,0);}}
+.mic-status{font-size:12px;color:var(--muted);flex:1;}
+
+/* Parts grid */
+.parts-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+.part-box{background:var(--dark);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.part-box.hl{border-color:rgba(224,32,32,.4);background:rgba(224,32,32,.04);}
+.part-l{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:800;color:var(--red);margin-bottom:3px;}
+.part-n{font-weight:600;font-size:13px;margin-bottom:5px;}
+.part-d{font-size:12px;color:var(--muted);line-height:1.5;}
+.we-sell{background:rgba(34,197,94,.12);color:var(--green);padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;margin-left:5px;}
+.elig-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.elig-box{border-radius:10px;padding:16px;}
+.elig-y{background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);}
+.elig-n{background:rgba(224,32,32,.06);border:1px solid rgba(224,32,32,.2);}
+.elig-t{font-weight:700;font-size:13px;margin-bottom:10px;}
+.elig-y .elig-t{color:var(--green);}
+.elig-n .elig-t{color:var(--red);}
+.elig-list{list-style:none;display:flex;flex-direction:column;gap:5px;}
+.elig-list li{font-size:12px;color:var(--muted);padding-left:12px;position:relative;}
+.elig-list li::before{content:'•';position:absolute;left:0;}
+.rule{border-radius:10px;padding:14px 16px;margin-bottom:10px;font-size:12px;line-height:1.7;}
+.rule-r{background:rgba(224,32,32,.07);border:1px solid rgba(224,32,32,.2);color:#FF8080;}
+.rule-y{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);color:var(--yellow);}
+.rule-g{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);color:#6EE7A0;}
+.edu-nav{display:flex;justify-content:flex-end;gap:10px;margin-top:8px;}
+.btn-next{background:var(--red);color:#fff;border:none;border-radius:9px;padding:11px 24px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;}
+.btn-next:hover{background:var(--red-dark);}
+.btn-back{background:transparent;border:1px solid var(--border);color:var(--text);border-radius:9px;padding:11px 20px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-back:hover{border-color:var(--red);color:var(--red);}
+
+/* Quiz */
+.quiz-q{font-weight:600;font-size:14px;margin-bottom:12px;}
+.quiz-opts{display:flex;flex-direction:column;gap:8px;}
+.quiz-opt{background:var(--dark);border:1px solid var(--border);border-radius:9px;padding:11px 14px;cursor:pointer;font-size:13px;text-align:left;color:var(--text);transition:all .2s;}
+.quiz-opt:hover:not(:disabled){border-color:var(--red);}
+.quiz-opt.correct{border-color:var(--green);background:rgba(34,197,94,.08);color:var(--green);}
+.quiz-opt.wrong{border-color:var(--red);background:rgba(224,32,32,.08);color:#FF6B6B;}
+
+/* PRACTICE */
+#practiceScreen{background:var(--black);}
+.prac-wrap{padding:24px 28px;max-width:800px;margin:0 auto;width:100%;}
+.stage-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:28px;}
+.stage-h{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;margin-bottom:5px;}
+.stage-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+.coach-box{background:var(--dark);border-left:3px solid var(--red);border-radius:0 10px 10px 0;padding:14px 18px;margin-bottom:16px;font-size:13px;line-height:1.7;}
+.coach-lbl{font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px;}
+.speak-btn{background:none;border:1px solid rgba(224,32,32,.3);color:var(--red);padding:6px 12px;border-radius:7px;font-size:11px;cursor:pointer;margin-bottom:14px;transition:all .2s;}
+.speak-btn:hover{background:rgba(224,32,32,.08);}
+.prac-chat{background:var(--dark);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px;}
+.prac-msgs{padding:14px;min-height:160px;max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
+.prac-input{border-top:1px solid var(--border);padding:10px 14px;display:flex;gap:8px;align-items:center;}
+.trans-box{background:var(--dark);border:1px solid var(--border);border-radius:9px;padding:12px 14px;min-height:50px;font-size:13px;color:var(--muted);margin-bottom:12px;font-style:italic;}
+.feed-box{border-radius:9px;padding:12px 14px;font-size:13px;line-height:1.6;display:none;margin-bottom:12px;}
+.feed-good{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);color:#6EE7A0;}
+.feed-bad{background:rgba(224,32,32,.08);border:1px solid rgba(224,32,32,.2);color:#FF8080;}
+.stage-nav{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;}
+
+/* VICIDIAL UI */
+#verifierScreen{background:#c0c0c0;font-family:Arial,sans-serif;}
+.vici-wrap{display:flex;flex-direction:column;height:100vh;}
+.vici-top-bar{background:#003399;color:#fff;padding:2px 8px;font-size:11px;display:flex;align-items:center;justify-content:space-between;}
+.vici-top-bar a{color:#ffff00;text-decoration:none;margin:0 6px;font-size:11px;}
+.vici-header{background:#cccccc;border-bottom:2px solid #666;padding:3px 8px;display:flex;align-items:center;gap:12px;}
+.vici-logo{color:#003399;font-weight:900;font-size:18px;font-family:Arial Black,sans-serif;}
+.vici-logo span{color:#cc0000;}
+.live-call-badge{background:#cc0000;color:#fff;font-weight:700;font-size:13px;padding:2px 10px;border-radius:3px;animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.6;}}
+.vici-status{background:#ffff00;border:1px solid #999;padding:2px 8px;font-size:11px;font-weight:700;color:#000;margin-bottom:4px;}
+.vici-body{display:grid;grid-template-columns:140px 1fr 180px;flex:1;overflow:hidden;}
+.vici-left{background:#cccccc;border-right:2px solid #999;padding:6px;display:flex;flex-direction:column;gap:4px;}
+.vici-btn{display:block;width:100%;background:#003399;color:#fff;border:2px outset #6699cc;padding:4px 6px;font-size:10px;font-weight:700;cursor:pointer;text-align:center;margin-bottom:2px;}
+.vici-btn:hover{background:#0044aa;}
+.vici-btn.red{background:#cc0000;border-color:#ff6666;}
+.vici-btn.red:hover{background:#dd0000;}
+.vici-btn.green{background:#006600;border-color:#66aa66;}
+.vici-btn.orange{background:#cc6600;border-color:#ffaa44;}
+.vici-main{background:#f0f0f0;padding:8px;overflow-y:auto;}
+.vici-section{background:#e8e8e8;border:1px solid #999;margin-bottom:8px;padding:6px;}
+.vici-section-title{background:#003399;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;margin:-6px -6px 8px -6px;}
+.vici-row{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+.vici-label{font-size:10px;color:#333;font-weight:700;min-width:60px;}
+.vici-field{background:#fff;border:1px solid #999;padding:2px 6px;font-size:11px;flex:1;color:#000;}
+.vici-right{background:#dddddd;border-left:2px solid #999;padding:6px;display:flex;flex-direction:column;gap:6px;}
+.vici-right-title{font-size:10px;font-weight:700;color:#003399;border-bottom:1px solid #999;padding-bottom:3px;margin-bottom:4px;}
+.vici-transfer-box{background:#e8e8f8;border:1px solid #9999cc;padding:6px;}
+.vici-call-log{background:#fff;border:1px solid #999;padding:4px;flex:1;overflow-y:auto;font-size:10px;}
+.vici-log-entry{border-bottom:1px solid #eee;padding:3px 0;color:#333;}
+.vici-bottom{background:#cccccc;border-top:2px solid #666;padding:4px 8px;display:flex;align-items:center;gap:8px;}
+.vici-bottom-btn{background:#003399;color:#fff;border:2px outset #6699cc;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;}
+.vici-bottom-btn:hover{background:#0044aa;}
+.vici-bottom-btn.red{background:#cc0000;border-color:#ff6666;}
+.vici-convo{background:#fff;border:1px solid #999;padding:8px;min-height:120px;max-height:180px;overflow-y:auto;margin-bottom:6px;font-size:11px;}
+.vici-convo-msg-ai{color:#003399;margin-bottom:4px;padding:3px 6px;background:#e8e8f8;border-left:3px solid #003399;}
+.vici-convo-msg-me{color:#006600;margin-bottom:4px;padding:3px 6px;background:#e8f8e8;border-left:3px solid #006600;text-align:right;}
+.vici-timer{font-size:12px;font-weight:700;color:#cc0000;font-family:monospace;}
+.vici-mute-row{display:flex;gap:6px;align-items:center;}
+.vici-mute-btn{background:#666;color:#fff;border:2px outset #999;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;}
+.vici-mute-btn.unmute{background:#006600;border-color:#66aa66;}
+.vici-disp-select{width:100%;border:1px solid #999;padding:3px;font-size:11px;margin-bottom:4px;}
+.dots{display:flex;gap:4px;padding:4px;}
+.dots span{width:6px;height:6px;background:#666;border-radius:50%;animation:dot 1.2s infinite;}
+.dots span:nth-child(2){animation-delay:.2s;}
+.dots span:nth-child(3){animation-delay:.4s;}
+@keyframes dot{0%,80%,100%{transform:scale(.6);opacity:.4;}40%{transform:scale(1);opacity:1;}}
+
+/* RESULTS */
+#resultsScreen{background:var(--black);}
+.res-box{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:40px 32px;width:100%;max-width:500px;text-align:center;}
+.score-circle{width:110px;height:110px;border-radius:50%;border:4px solid var(--red);display:inline-flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:18px;}
+.score-n{font-family:'Space Grotesk',sans-serif;font-size:34px;font-weight:800;line-height:1;}
+.score-of{font-size:11px;color:var(--muted);margin-top:2px;}
+.res-status{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:800;margin-bottom:5px;}
+.res-pass{color:var(--green);}
+.res-fail{color:var(--red);}
+.res-msg{font-size:13px;color:var(--muted);margin-bottom:20px;}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+.metric{background:var(--dark);border:1px solid var(--border);border-radius:9px;padding:12px;}
+.metric-v{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;}
+.metric-l{font-size:11px;color:var(--muted);margin-top:3px;}
+.feed-area{background:var(--dark);border:1px solid var(--border);border-radius:9px;padding:14px;text-align:left;font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:18px;}
+.res-btns{display:flex;gap:10px;}
+
+/* CERT */
+#certScreen{background:var(--black);}
+.cert-box{background:var(--card);border:2px solid var(--red);border-radius:18px;padding:40px;width:100%;max-width:520px;text-align:center;position:relative;}
+.cert-c{position:absolute;width:32px;height:32px;border-color:var(--red);border-style:solid;opacity:.35;}
+.cert-c.tl{top:12px;left:12px;border-width:2px 0 0 2px;}
+.cert-c.tr{top:12px;right:12px;border-width:2px 2px 0 0;}
+.cert-c.bl{bottom:12px;left:12px;border-width:0 0 2px 2px;}
+.cert-c.br{bottom:12px;right:12px;border-width:0 2px 2px 0;}
+.cert-af{width:48px;height:48px;background:var(--red);border-radius:11px;display:inline-flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:18px;color:#fff;margin-bottom:12px;}
+.cert-sup{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;}
+.cert-main{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:800;margin-bottom:18px;}
+.cert-div{height:1px;background:linear-gradient(90deg,transparent,var(--red),transparent);margin:16px 0;}
+.cert-name{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:800;color:var(--red);margin-bottom:5px;}
+.cert-camp{font-size:14px;color:var(--muted);margin-bottom:18px;}
+.cert-score{display:inline-block;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--green);padding:6px 20px;border-radius:20px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;margin-bottom:18px;}
+.cert-meta{display:flex;justify-content:space-between;padding-top:16px;border-top:1px solid var(--border);}
+.cert-mi .cl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+.cert-mi .cv{font-size:12px;font-weight:600;}
+.cert-btns{display:flex;gap:10px;margin-top:18px;}
+
+/* ADMIN */
+#adminScreen{background:var(--black);}
+.adm-wrap{padding:24px 28px;max-width:1000px;margin:0 auto;width:100%;}
+.adm-h{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:800;margin-bottom:5px;}
+.adm-sub{font-size:13px;color:var(--muted);margin-bottom:22px;}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;}
+.stat-b{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.stat-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.stat-v{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:800;}
+.stat-v.red{color:var(--red);}
+.stat-v.green{color:var(--green);}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:18px;}
+.tab{background:none;border:none;color:var(--muted);padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;}
+.tab.active{color:var(--red);border-bottom-color:var(--red);}
+.tab-p{display:none;}
+.tab-p.active{display:block;}
+.tbl{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.tbl-h{display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 1fr 1fr;background:var(--dark);padding:10px 16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--border);}
+.tbl-r{display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 1fr 1fr;padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;align-items:center;}
+.tbl-r:last-child{border-bottom:none;}
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;}
+.pill-a{background:rgba(34,197,94,.1);color:var(--green);}
+.pill-i{background:rgba(120,120,120,.1);color:var(--muted);}
+.pill-p{background:rgba(34,197,94,.1);color:var(--green);}
+.pill-f{background:rgba(224,32,32,.1);color:var(--red);}
+.btn-xs{background:transparent;border:1px solid var(--border);color:var(--muted);padding:4px 9px;border-radius:5px;font-size:11px;cursor:pointer;transition:all .2s;}
+.btn-xs:hover{border-color:var(--red);color:var(--red);}
+.add-form{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px;display:none;}
+.add-form.open{display:block;}
+.f-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;}
+.tbl-act{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="screen active">
+<div class="center">
+  <div class="login-wrap">
+    <div class="login-header">
+      <div class="login-mark" id="loginMark">AF</div>
+      <div class="login-name" id="loginName">AgentForge</div>
+    </div>
+    <div class="card">
+      <div class="err" id="loginErr">Invalid ID or password.</div>
+      <label class="lbl">Agent ID</label>
+      <input class="inp" id="loginId" type="text" placeholder="Enter your ID" autocomplete="off">
+      <label class="lbl">Password</label>
+      <input class="inp" id="loginPass" type="password" placeholder="Enter your password">
+      <button class="btn" onclick="doLogin()">Sign In →</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- LANGUAGE SELECT -->
+<div id="langScreen" class="screen">
+<div class="center">
+  <div class="lang-wrap">
+    <div class="lang-title">Apni Zaban Chunein</div>
+    <div class="lang-sub">Select your preferred language for training</div>
+    <div class="lang-grid">
+      <div class="lang-btn" onclick="selectLang('ur','Urdu')">
+        <div class="lang-icon">🇵🇰</div>
+        <div class="lang-name">Urdu</div>
+        <div class="lang-native">اردو</div>
+      </div>
+      <div class="lang-btn" onclick="selectLang('hi','Hindi')">
+        <div class="lang-icon">🇮🇳</div>
+        <div class="lang-name">Hindi</div>
+        <div class="lang-native">हिंदी</div>
+      </div>
+      <div class="lang-btn" onclick="selectLang('pa','Punjabi')">
+        <div class="lang-icon">🌟</div>
+        <div class="lang-name">Punjabi</div>
+        <div class="lang-native">ਪੰਜਾਬੀ</div>
+      </div>
+      <div class="lang-btn" onclick="selectLang('ps','Pashto')">
+        <div class="lang-icon">🌿</div>
+        <div class="lang-name">Pashto</div>
+        <div class="lang-native">پښتو</div>
+      </div>
+    </div>
+    <button class="btn" onclick="selectLang('en','English')">Continue in English</button>
+  </div>
+</div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashScreen" class="screen">
+<nav class="nav">
+  <div class="nav-logo">
+    <div class="nav-mark">AF</div>
+    <div class="nav-brand">Agent<span>Forge</span></div>
+  </div>
+  <div style="font-size:12px;color:var(--muted);" id="navCenter">Medicare Training</div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span style="font-size:12px;color:var(--muted);">Welcome, <span style="color:var(--red);font-weight:700;" id="navName">Agent</span></span>
+    <button class="btn-nav" onclick="logout()">Sign Out</button>
+  </div>
+</nav>
+<div class="dash-wrap">
+  <div class="dash-h" id="dashH">Training Dashboard</div>
+  <div class="dash-sub">Medicare Advantage Plan — Complete all modules to get certified</div>
+  <div class="mod-grid">
+    <div class="mod-card" id="card-edu" onclick="goEdu()">
+      <div class="mod-icon">📚</div>
+      <div class="mod-title">Medicare Education</div>
+      <div class="mod-desc">AI will teach you Medicare in your language — Parts A,B,C,D, eligibility, and call rules.</div>
+      <div class="mod-tag tag-red">Start Here</div>
+    </div>
+    <div class="mod-card locked" id="card-prac" onclick="checkLock('prac')">
+      <div class="mod-icon">🎯</div>
+      <div class="mod-title">Pitch Practice</div>
+      <div class="mod-desc">AI coach teaches you script, pronunciation, and objection handling step by step.</div>
+      <div class="mod-tag tag-gray" id="prac-tag">🔒 Complete Education First</div>
+    </div>
+    <div class="mod-card locked" id="card-ver" onclick="checkLock('ver')">
+      <div class="mod-icon">✅</div>
+      <div class="mod-title">Verifier Test</div>
+      <div class="mod-desc">5 real AI customer calls on ViciDial interface. Pass 70% to get certified.</div>
+      <div class="mod-tag tag-gray" id="ver-tag">🔒 Complete Practice First</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- EDUCATION -->
+<div id="eduScreen" class="screen">
+<nav class="nav">
+  <div class="nav-logo"><div class="nav-mark">AF</div><div class="nav-brand">Agent<span>Forge</span></div></div>
+  <div style="font-size:12px;color:var(--muted);">Medicare Education — <span id="eduLangShow">English</span></div>
+  <button class="btn-nav" onclick="logout()">Sign Out</button>
+</nav>
+<div class="edu-wrap">
+  <button class="back-btn" onclick="goScreen('dashScreen')">← Dashboard</button>
+  <div class="prog" id="eduProg">
+    <div class="prog-s active" id="ep1"></div>
+    <div class="prog-s" id="ep2"></div>
+    <div class="prog-s" id="ep3"></div>
+  </div>
+
+  <!-- Lesson 1 -->
+  <div id="el1">
+    <div class="edu-card">
+      <div class="edu-h" id="el1h">📋 Medicare Parts — What You Must Know</div>
+      <div class="parts-grid">
+        <div class="part-box"><div class="part-l">A</div><div class="part-n">Hospital Insurance</div><div class="part-d">Covers inpatient stays, nursing care, hospice.</div></div>
+        <div class="part-box"><div class="part-l">B</div><div class="part-n">Medical Insurance</div><div class="part-d">Doctor visits, outpatient care, preventive services.</div></div>
+        <div class="part-box hl"><div class="part-l">C <span class="we-sell">WE SELL</span></div><div class="part-n">Medicare Advantage</div><div class="part-d">Covers A+B plus dental, vision, hearing, OTC — at no extra cost!</div></div>
+        <div class="part-box"><div class="part-l">D</div><div class="part-n">Prescription Drugs</div><div class="part-d">Covers medicines. We do NOT sell standalone Part D.</div></div>
+      </div>
+      <div class="part-box"><div class="part-l" style="font-size:16px;">Supplement</div><div class="part-n">Medigap — We do NOT sell this</div><div class="part-d">If customer has only Medigap — we cannot help them.</div></div>
+    </div>
+    <!-- AI Chat for Education -->
+    <div class="ai-chat">
+      <div class="ai-chat-msgs" id="eduChat1"></div>
+      <div class="ai-chat-input">
+        <button class="mic-toggle muted" id="eduMic1" onclick="toggleEduMic('eduMic1','eduChat1',1)">🎤</button>
+        <span class="mic-status" id="eduMicStatus1">Click mic to ask a question or respond</span>
+      </div>
+    </div>
+    <div class="edu-nav"><button class="btn-next" onclick="goLesson(2)">Next: Eligibility →</button></div>
+  </div>
+
+  <!-- Lesson 2 -->
+  <div id="el2" style="display:none;">
+    <div class="edu-card">
+      <div class="edu-h">👥 Who Can We Help?</div>
+      <div class="elig-grid">
+        <div class="elig-box elig-y"><div class="elig-t">✅ ELIGIBLE</div><ul class="elig-list"><li>Medicare Part A + B</li><li>Age 50 to 89</li><li>Living at home independently</li><li>Makes own decisions</li><li>Has Part C (can upgrade)</li></ul></div>
+        <div class="elig-box elig-n"><div class="elig-t">❌ NOT ELIGIBLE — Hang Up</div><ul class="elig-list"><li>VA Benefits</li><li>TRICARE</li><li>Job retiree / employer coverage</li><li>Nursing home / assisted living</li><li>Age 49 or below</li><li>Age 90 or above</li><li>POA not available</li></ul></div>
+      </div>
+    </div>
+    <div class="edu-card">
+      <div class="edu-h">⚡ Critical Call Rules</div>
+      <div class="rule rule-r">IMMEDIATE HANGUP: Abusive language • "Remove me from list" (DNC) • "Is this a scam?" • VA/TRICARE/Employer • Nursing home • Age 49 or below / 90 or above</div>
+      <div class="rule rule-y">MAX 2 REBUTTALS: After 2 rebuttals → "Have a wonderful day!" → HANGUP. Never try 3rd rebuttal.</div>
+      <div class="rule rule-g">DISCLAIMER before transfer: "I'm going to connect this call to a licensed agent, and even if your number is listed on any kind of federal or state do not call list, you are consenting to receive this call. Do you understand and agree to proceed?" → MUST get YES or OKAY!</div>
+    </div>
+    <div class="ai-chat">
+      <div class="ai-chat-msgs" id="eduChat2"></div>
+      <div class="ai-chat-input">
+        <button class="mic-toggle muted" id="eduMic2" onclick="toggleEduMic('eduMic2','eduChat2',2)">🎤</button>
+        <span class="mic-status" id="eduMicStatus2">Click mic to ask a question</span>
+      </div>
+    </div>
+    <div class="edu-nav"><button class="btn-back" onclick="goLesson(1)">← Back</button><button class="btn-next" onclick="goLesson(3)">Next: Quiz →</button></div>
+  </div>
+
+  <!-- Lesson 3 Quiz -->
+  <div id="el3" style="display:none;">
+    <div class="edu-card">
+      <div class="edu-h">🧠 Quick Quiz</div>
+      <div id="qq1" style="margin-bottom:16px;">
+        <div class="quiz-q">Q1: Customer says they have TRICARE. What do you do?</div>
+        <div class="quiz-opts">
+          <button class="quiz-opt" onclick="qAns(this,'q1','wrong')">Continue and try to pitch</button>
+          <button class="quiz-opt" onclick="qAns(this,'q1','correct')">Immediate hangup — not eligible</button>
+          <button class="quiz-opt" onclick="qAns(this,'q1','wrong')">Ask for Medicare number</button>
+        </div>
+      </div>
+      <div id="qq2" style="display:none;margin-bottom:16px;">
+        <div class="quiz-q">Q2: Customer says "not interested" twice. What now?</div>
+        <div class="quiz-opts">
+          <button class="quiz-opt" onclick="qAns(this,'q2','wrong')">Try 3rd rebuttal</button>
+          <button class="quiz-opt" onclick="qAns(this,'q2','correct')">"Have a wonderful day!" and hang up</button>
+          <button class="quiz-opt" onclick="qAns(this,'q2','wrong')">Transfer anyway</button>
+        </div>
+      </div>
+      <div id="qq3" style="display:none;margin-bottom:16px;">
+        <div class="quiz-q">Q3: What must customer say before transfer?</div>
+        <div class="quiz-opts">
+          <button class="quiz-opt" onclick="qAns(this,'q3','wrong')">Date of birth</button>
+          <button class="quiz-opt" onclick="qAns(this,'q3','wrong')">Medicare number</button>
+          <button class="quiz-opt" onclick="qAns(this,'q3','correct')">"Yes" or "Okay" to disclaimer</button>
+        </div>
+      </div>
+      <div id="quizDone" style="display:none;" class="rule rule-g">🎉 Quiz passed! Practice module unlocked!</div>
+    </div>
+    <div class="edu-nav"><button class="btn-back" onclick="goLesson(2)">← Back</button><button class="btn-next" id="finEduBtn" style="display:none;" onclick="finishEdu()">Start Practice →</button></div>
+  </div>
+</div>
+</div>
+
+<!-- PRACTICE -->
+<div id="practiceScreen" class="screen">
+<nav class="nav">
+  <div class="nav-logo"><div class="nav-mark">AF</div><div class="nav-brand">Agent<span>Forge</span></div></div>
+  <div style="font-size:12px;color:var(--muted);">Pitch Practice — Stage <span id="stageN">1</span>/4</div>
+  <button class="btn-nav" onclick="logout()">Sign Out</button>
+</nav>
+<div class="prac-wrap">
+  <button class="back-btn" onclick="goScreen('dashScreen')">← Dashboard</button>
+  <div class="prog" style="margin-bottom:20px;">
+    <div class="prog-s active" id="pp1"></div>
+    <div class="prog-s" id="pp2"></div>
+    <div class="prog-s" id="pp3"></div>
+    <div class="prog-s" id="pp4"></div>
+  </div>
+
+  <!-- Stage 1 -->
+  <div id="ps1" class="stage-card">
+    <div class="stage-h">Stage 1 — Opening Line</div>
+    <div class="stage-sub">AI coach will teach you and check if you understood</div>
+    <div class="coach-box">
+      <div class="coach-lbl">🤖 AI Coach</div>
+      <div id="s1coach">Loading coach...</div>
+    </div>
+    <button class="speak-btn" onclick="speakText(document.getElementById('s1example').textContent)">🔊 Hear Example</button>
+    <div id="s1example" style="display:none;">Hi, this is John calling on a recorded line. How are you doing today?</div>
+    <div class="prac-chat">
+      <div class="prac-msgs" id="pracChat1"></div>
+      <div class="prac-input">
+        <button class="mic-toggle muted" id="pracMic1" onclick="togglePracMic('pracMic1','pracChat1',1)">🎤</button>
+        <span class="mic-status" id="pracMicSt1">Click mic to speak</span>
+      </div>
+    </div>
+    <div class="stage-nav" id="s1nav" style="display:none;">
+      <button class="btn-next" onclick="goStage(2)">Next Stage →</button>
+    </div>
+  </div>
+
+  <!-- Stage 2 -->
+  <div id="ps2" class="stage-card" style="display:none;">
+    <div class="stage-h">Stage 2 — Qualifying Questions</div>
+    <div class="stage-sub">Practice asking all 7 questions in order</div>
+    <div class="coach-box">
+      <div class="coach-lbl">🤖 AI Coach</div>
+      <div id="s2coach">Loading...</div>
+    </div>
+    <button class="speak-btn" onclick="speakText('May I get your first and last name please? And may I ask your age? What is your zip code? Are you enrolled in Medicare Part A and B? Do you have VA, TRICARE or employer coverage? Are you living in your own home? Do you make your own healthcare decisions?')">🔊 Hear Example</button>
+    <div class="prac-chat">
+      <div class="prac-msgs" id="pracChat2"></div>
+      <div class="prac-input">
+        <button class="mic-toggle muted" id="pracMic2" onclick="togglePracMic('pracMic2','pracChat2',2)">🎤</button>
+        <span class="mic-status" id="pracMicSt2">Click mic to speak</span>
+      </div>
+    </div>
+    <div class="stage-nav" id="s2nav" style="display:none;">
+      <button class="btn-back" onclick="goStage(1)">← Back</button>
+      <button class="btn-next" onclick="goStage(3)">Next Stage →</button>
+    </div>
+  </div>
+
+  <!-- Stage 3 -->
+  <div id="ps3" class="stage-card" style="display:none;">
+    <div class="stage-h">Stage 3 — Objection Handling</div>
+    <div class="stage-sub">Maximum 2 rebuttals only!</div>
+    <div class="coach-box">
+      <div class="coach-lbl">🤖 AI Coach</div>
+      <div id="s3coach">Loading...</div>
+    </div>
+    <button class="speak-btn" onclick="speakText('I completely understand. I just want to make sure you are not missing out on benefits you are already entitled to. Would you be open to just hearing what is available?')">🔊 Hear Rebuttal 1</button>
+    <div class="prac-chat">
+      <div class="prac-msgs" id="pracChat3"></div>
+      <div class="prac-input">
+        <button class="mic-toggle muted" id="pracMic3" onclick="togglePracMic('pracMic3','pracChat3',3)">🎤</button>
+        <span class="mic-status" id="pracMicSt3">Click mic to speak</span>
+      </div>
+    </div>
+    <div class="stage-nav" id="s3nav" style="display:none;">
+      <button class="btn-back" onclick="goStage(2)">← Back</button>
+      <button class="btn-next" onclick="goStage(4)">Next Stage →</button>
+    </div>
+  </div>
+
+  <!-- Stage 4 -->
+  <div id="ps4" class="stage-card" style="display:none;">
+    <div class="stage-h">Stage 4 — Disclaimer & Transfer</div>
+    <div class="stage-sub">Say disclaimer and get YES or OKAY before transfer</div>
+    <div class="coach-box">
+      <div class="coach-lbl">🤖 AI Coach</div>
+      <div id="s4coach">Loading...</div>
+    </div>
+    <button class="speak-btn" onclick="speakText('I am going to connect this call to a licensed agent, and even if your number is listed on any kind of federal or state do not call list, you are consenting to receive this call. Do you understand and agree to proceed?')">🔊 Hear Example</button>
+    <div class="prac-chat">
+      <div class="prac-msgs" id="pracChat4"></div>
+      <div class="prac-input">
+        <button class="mic-toggle muted" id="pracMic4" onclick="togglePracMic('pracMic4','pracChat4',4)">🎤</button>
+        <span class="mic-status" id="pracMicSt4">Click mic to speak</span>
+      </div>
+    </div>
+    <div class="stage-nav" id="s4nav" style="display:none;">
+      <button class="btn-back" onclick="goStage(3)">← Back</button>
+      <button class="btn-next" onclick="finishPrac()">Go to Verifier Test →</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- VICIDIAL VERIFIER -->
+<div id="verifierScreen" class="screen">
+  <!-- Intro -->
+  <div id="verIntro" style="background:var(--black);flex:1;display:flex;align-items:center;justify-content:center;">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px;max-width:460px;text-align:center;">
+      <div style="font-size:40px;margin-bottom:14px;">📞</div>
+      <div style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:800;margin-bottom:8px;">Verifier Test</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:24px;">5 Medicare AI customer calls on ViciDial interface. Pass 70% to get certified.</div>
+      <div style="background:var(--dark);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:left;margin-bottom:22px;font-size:12px;">
+        <div style="display:flex;flex-direction:column;gap:8px;color:var(--muted);">
+          <div>📞 <strong style="color:#fff;">Call 1</strong> — Interested customer</div>
+          <div>❌ <strong style="color:#fff;">Call 2</strong> — Not interested (rebuttals)</div>
+          <div>🚫 <strong style="color:#fff;">Call 3</strong> — DNC / Angry</div>
+          <div>🌍 <strong style="color:#fff;">Call 4</strong> — Indian accent customer</div>
+          <div>⚠️ <strong style="color:#fff;">Call 5</strong> — No Power of Attorney</div>
+        </div>
+      </div>
+      <button class="btn" onclick="startVerifier()">Begin Test →</button>
+    </div>
+  </div>
+
+  <!-- ViciDial UI -->
+  <div id="verActive" style="display:none;flex:1;flex-direction:column;">
+    <div class="vici-top-bar">
+      <div>
+        <a href="#">Agent web client</a>
+        <a href="#" style="color:#fff;">close [F]</a>
+        <a href="#">Agent web client</a>
+        <a href="#">LOGOUT</a>
+        <a href="#">Agent web client</a>
+      </div>
+      <div style="color:#ffff00;">All B...</div>
+    </div>
+    <div class="vici-header">
+      <div class="vici-logo">VICI<span>dial</span></div>
+      <div style="font-size:10px;color:#333;" id="viciDate">2026-07-02 08:00:00</div>
+      <div style="font-size:10px;color:#333;">session ID: 8600066</div>
+      <div class="live-call-badge">LIVE CALL</div>
+      <div style="margin-left:auto;font-size:10px;color:#333;">seconds: <span id="viciSecs" style="font-weight:700;color:#cc0000;">0</span></div>
+    </div>
+    <div class="vici-status" id="viciStatus">STATUS: Connecting to customer...</div>
+    <div class="vici-body">
+      <!-- Left buttons -->
+      <div class="vici-left">
+        <div style="font-size:9px;color:#333;margin-bottom:4px;">RECORDING FILE:<br>20260702_080000</div>
+        <button class="vici-btn green">START RECORDING</button>
+        <button class="vici-btn">WEB FORM</button>
+        <button class="vici-btn">WEB FORM 2</button>
+        <button class="vici-btn orange">PARK CALL</button>
+        <button class="vici-btn orange">TRANSFER - CONF</button>
+        <button class="vici-btn red" onclick="vHangup()">HANGUP CUSTOMER</button>
+        <button class="vici-btn">SEND DTMF</button>
+        <div style="margin-top:8px;font-size:9px;color:#333;">
+          <div>VERSION: 2.14-851c</div>
+          <div>BUILD: 211</div>
+        </div>
+        <!-- MUTE controls -->
+        <div style="margin-top:8px;">
+          <div class="vici-mute-row">
+            <button class="vici-mute-btn" id="muteBtn" onclick="toggleVMute()">MUTE</button>
+            <button class="vici-mute-btn unmute" id="unmuteBtn" onclick="toggleVMute()">UNMUTE</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main area -->
+      <div class="vici-main">
+        <div class="vici-section">
+          <div class="vici-section-title">Customer Information</div>
+          <div class="vici-row"><div class="vici-label">Title</div><input class="vici-field" style="max-width:40px;" value=""></div>
+          <div class="vici-row"><div class="vici-label">First</div><input class="vici-field" id="vCustFirst" value=""><div class="vici-label" style="min-width:20px;">MI</div><input class="vici-field" style="max-width:30px;" value=""><div class="vici-label">Last</div><input class="vici-field" id="vCustLast" value=""></div>
+          <div class="vici-row"><div class="vici-label">Phone</div><input class="vici-field" id="vCustPhone" value=""></div>
+          <div class="vici-row"><div class="vici-label">Age</div><input class="vici-field" id="vCustAge" value="" style="max-width:60px;"></div>
+          <div class="vici-row"><div class="vici-label">Zip</div><input class="vici-field" id="vCustZip" value="" style="max-width:80px;"></div>
+          <div class="vici-row"><div class="vici-label">Campaign</div><input class="vici-field" value="Medicare Advantage" readonly></div>
+        </div>
+
+        <!-- Conversation -->
+        <div class="vici-section">
+          <div class="vici-section-title">Live Call — Call <span id="vCallNum">1</span>/5 &nbsp;&nbsp; <span id="vCallType" style="color:#ffff00;"></span></div>
+          <div class="vici-convo" id="vConvo"></div>
+          <!-- Mic -->
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+            <button class="vici-mute-btn" id="vMicBtn" onclick="vToggleMic()" style="background:#006600;border-color:#66aa66;font-size:11px;padding:4px 14px;">🎤 SPEAK</button>
+            <span style="font-size:10px;color:#666;" id="vMicStatus">Click to speak</span>
+          </div>
+        </div>
+
+        <!-- Disposition -->
+        <div class="vici-section">
+          <div class="vici-section-title">Disposition</div>
+          <select class="vici-disp-select" id="vDisp">
+            <option value="">-- Select Disposition --</option>
+            <option>Transferred — License Agent</option>
+            <option>Not Interested — No Rebuttal</option>
+            <option>Not Interested — After Rebuttal</option>
+            <option>DNC — Do Not Call</option>
+            <option>Callback</option>
+            <option>Not Eligible — VA/TRICARE</option>
+            <option>Not Eligible — Age</option>
+            <option>Not Eligible — Facility</option>
+            <option>No POA</option>
+            <option>Hung Up — Abusive</option>
+            <option>No Answer</option>
+          </select>
+          <button class="vici-btn" style="margin-top:4px;" onclick="vHangup()">SUBMIT DISPOSITION & NEXT CALL</button>
+        </div>
+      </div>
+
+      <!-- Right sidebar -->
+      <div class="vici-right">
+        <div class="vici-right-title">Call Progress</div>
+        <div style="font-size:10px;color:#333;">Call <span id="vCallNumR">1</span> of 5</div>
+        <div class="vici-timer" id="vTimerR">00:00</div>
+        <div style="font-size:10px;color:#333;margin-top:4px;">Script Checklist:</div>
+        <div class="vici-call-log" id="vChecklist">
+          <div class="vici-log-entry">☐ Get Name</div>
+          <div class="vici-log-entry">☐ Verify Age (50-89)</div>
+          <div class="vici-log-entry">☐ Get Zip Code</div>
+          <div class="vici-log-entry">☐ Medicare A+B</div>
+          <div class="vici-log-entry">☐ No VA/TRICARE</div>
+          <div class="vici-log-entry">☐ Living at home</div>
+          <div class="vici-log-entry">☐ Decision maker</div>
+          <div class="vici-log-entry">☐ Disclaimer + YES</div>
+        </div>
+        <div style="font-size:10px;color:#333;margin-top:6px;">Scores:</div>
+        <div class="vici-call-log">
+          <div class="vici-log-entry" id="scoreLog">No calls completed yet</div>
+        </div>
+        <div style="font-size:10px;font-weight:700;color:#cc0000;margin-top:4px;" id="vOverallScore">Overall: —</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="resultsScreen" class="screen">
+<div class="center">
+  <div class="res-box">
+    <div class="score-circle" id="rCircle">
+      <div class="score-n" id="rScore">82</div>
+      <div class="score-of">/ 100</div>
+    </div>
+    <div class="res-status" id="rStatus">PASS ✅</div>
+    <div class="res-msg" id="rMsg">All 5 calls completed!</div>
+    <div class="metrics">
+      <div class="metric"><div class="metric-v" id="rm1">8/10</div><div class="metric-l">Script</div></div>
+      <div class="metric"><div class="metric-v" id="rm2">8/10</div><div class="metric-l">Disposition</div></div>
+      <div class="metric"><div class="metric-v" id="rm3">9/10</div><div class="metric-l">Rebuttals</div></div>
+    </div>
+    <div class="feed-area" id="rFeed"></div>
+    <div class="res-btns">
+      <button class="btn-ghost" onclick="goScreen('dashScreen')">Dashboard</button>
+      <button class="btn" style="flex:1;border:none;" onclick="showCert()">🏆 Certificate</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- CERTIFICATE -->
+<div id="certScreen" class="screen">
+<nav class="nav"><div class="nav-logo"><div class="nav-mark">AF</div><div class="nav-brand">Agent<span>Forge</span></div></div><button class="btn-nav" onclick="goScreen('dashScreen')">← Dashboard</button></nav>
+<div class="center">
+  <div class="cert-box">
+    <div class="cert-c tl"></div><div class="cert-c tr"></div><div class="cert-c bl"></div><div class="cert-c br"></div>
+    <div class="cert-af">AF</div>
+    <div class="cert-sup">AgentForge — Certified</div>
+    <div class="cert-main">Certificate of Completion</div>
+    <div class="cert-div"></div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:7px;">This certifies that</div>
+    <div class="cert-name" id="certName">Agent</div>
+    <div class="cert-camp">Medicare Advantage Plan Training</div>
+    <div class="cert-score" id="certScore">Score: 82/100</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.6;">has successfully completed all required training modules and is certified to handle Medicare Advantage calls.</div>
+    <div class="cert-meta">
+      <div class="cert-mi"><div class="cl">Date</div><div class="cv" id="certDate">—</div></div>
+      <div class="cert-mi"><div class="cl">Cert ID</div><div class="cv" id="certId">—</div></div>
+      <div class="cert-mi"><div class="cl">Issued By</div><div class="cv">AgentForge</div></div>
+    </div>
+    <div class="cert-btns">
+      <button class="btn-ghost" style="flex:1;" onclick="window.print()">🖨 Print</button>
+      <button class="btn" style="flex:1;border:none;" onclick="goScreen('dashScreen')">Done</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ADMIN -->
+<div id="adminScreen" class="screen">
+<nav class="nav"><div class="nav-logo"><div class="nav-mark">AF</div><div class="nav-brand">Agent<span>Forge</span></div></div><div style="font-size:12px;color:var(--red);font-weight:700;">⚡ Admin</div><button class="btn-nav" onclick="logout()">Sign Out</button></nav>
+<div class="adm-wrap">
+  <div class="adm-h">Admin Panel</div>
+  <div class="adm-sub">Manage trainees and call centers</div>
+  <div class="stats-row">
+    <div class="stat-b"><div class="stat-l">Total Trainees</div><div class="stat-v" id="as1">2</div></div>
+    <div class="stat-b"><div class="stat-l">Active Today</div><div class="stat-v red" id="as2">1</div></div>
+    <div class="stat-b"><div class="stat-l">Passed</div><div class="stat-v green" id="as3">0</div></div>
+    <div class="stat-b"><div class="stat-l">Call Centers</div><div class="stat-v">1</div></div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="aTab('t',this)">Trainees</button>
+    <button class="tab" onclick="aTab('c',this)">Call Centers</button>
+    <button class="tab" onclick="aTab('r',this)">Reports</button>
+  </div>
+  <div class="tab-p active" id="tp-t">
+    <div class="tbl-act"><div style="font-size:12px;color:var(--muted);">ZAC BPO Trainees</div><button class="btn" style="width:auto;padding:8px 16px;font-size:12px;" onclick="document.getElementById('addF').classList.toggle('open')">+ Add</button></div>
+    <div class="add-form" id="addF">
+      <div class="f-row">
+        <div><label class="lbl">Name</label><input class="inp" id="nN" style="margin-bottom:0;" placeholder="Ahmed Ali"></div>
+        <div><label class="lbl">Agent ID</label><input class="inp" id="nI" style="margin-bottom:0;" placeholder="ZAC003"></div>
+        <div><label class="lbl">Shift</label><select class="inp" id="nS" style="margin-bottom:0;"><option>Morning</option><option>Evening</option><option>Night</option></select></div>
+      </div>
+      <button class="btn" style="width:auto;padding:8px 18px;font-size:12px;" onclick="addT()">Add →</button>
+    </div>
+    <div class="tbl"><div class="tbl-h"><div>Name</div><div>ID</div><div>Status</div><div>Progress</div><div>Score</div><div>Actions</div></div>
+    <div id="tRows">
+      <div class="tbl-r"><div>Ali Hassan</div><div style="color:var(--muted);">ZAC001</div><div><span class="pill pill-a">Active</span></div><div style="color:var(--muted);">Education</div><div><span class="pill pill-p">75%</span></div><div style="display:flex;gap:5px;"><button class="btn-xs" onclick="alert('Reset done')">Reset</button><button class="btn-xs" onclick="this.closest('.tbl-r').remove()">Remove</button></div></div>
+      <div class="tbl-r"><div>Sara Khan</div><div style="color:var(--muted);">ZAC002</div><div><span class="pill pill-i">Inactive</span></div><div style="color:var(--muted);">Day 1</div><div><span class="pill pill-f">45%</span></div><div style="display:flex;gap:5px;"><button class="btn-xs" onclick="alert('Reset done')">Reset</button><button class="btn-xs" onclick="this.closest('.tbl-r').remove()">Remove</button></div></div>
+    </div></div>
+  </div>
+  <div class="tab-p" id="tp-c">
+    <div class="tbl"><div class="tbl-h" style="grid-template-columns:2fr 1.5fr 1fr 1fr;"><div>Center</div><div>Login</div><div>Trainees</div><div>Status</div></div>
+    <div class="tbl-r" style="grid-template-columns:2fr 1.5fr 1fr 1fr;"><div style="display:flex;align-items:center;gap:8px;"><div style="width:28px;height:28px;background:var(--red);border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:10px;font-family:'Space Grotesk',sans-serif;">ZAC</div><div><div style="font-weight:600;font-size:13px;">ZAC BPO</div><div style="font-size:11px;color:var(--muted);">You Will Push It, We Will Make It</div></div></div><div style="color:var(--muted);">zacbpo</div><div>2</div><div><span class="pill pill-a">Active</span></div></div></div>
+  </div>
+  <div class="tab-p" id="tp-r">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;"><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Today</div>
+        <div style="display:flex;flex-direction:column;gap:9px;font-size:13px;">
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Calls Done</span><span style="font-weight:700;">24</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Avg Score</span><span style="font-weight:700;color:var(--green);">76%</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Passed</span><span style="font-weight:700;color:var(--green);">1</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Failed</span><span style="font-weight:700;color:var(--red);">1</span></div>
+        </div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;"><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Reports</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button class="btn-ghost" style="width:100%;font-size:12px;" onclick="alert('Connect database for reports')">📊 Daily</button>
+          <button class="btn-ghost" style="width:100%;font-size:12px;" onclick="alert('Connect database for reports')">📊 Weekly</button>
+          <button class="btn-ghost" style="width:100%;font-size:12px;" onclick="alert('Connect database for reports')">📊 Monthly</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const API_KEY='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';
+const USERS={
+  'zainsheikh':{pass:'Zain0903',role:'owner',name:'Zain Sheikh'},
+  'zacbpo':{pass:'zacbpo',role:'manager',name:'ZAC BPO',center:'ZAC BPO',logo:'ZAC'},
+  '11':{pass:'11',role:'verifier',name:'Verifier 1'},
+  '22':{pass:'22',role:'verifier',name:'Verifier 2'},
+  '33':{pass:'33',role:'verifier',name:'Verifier 3'},
+  '44':{pass:'44',role:'verifier',name:'Verifier 4'},
+  '55':{pass:'55',role:'verifier',name:'Verifier 5'}
+};
+
+let CU=null,lang='en',langName='English',eduDone=false,pracDone=false;
+let recognition=null,listening=false,isMuted=true;
+let vCallIdx=0,vScores=[],vHistory=[],vTimer=null,vSecs=0,vMicOn=false,vMuted=false;
+let curLesson=1,curStage=1;
+const synth=window.speechSynthesis;
+
+const LANG_PROMPTS={
+  ur:'You are an AI teacher. Always respond in URDU language (Roman Urdu is also fine). After explaining each point, ask "Samajh aa gaya? Ya phir se samjhaon?" and wait for response.',
+  hi:'You are an AI teacher. Always respond in HINDI language. After explaining each point, ask "Samajh aaya? Ya phir se samjhaun?" and wait for response.',
+  pa:'You are an AI teacher. Always respond in PUNJABI language. After explaining each point, ask "Samajh aa gaya? Ya phir samjhaon?" and wait for response.',
+  ps:'You are an AI teacher. Always respond in PASHTO language. After explaining each point, ask whether they understood and wait for response.',
+  en:'You are an AI teacher. Respond in English. After explaining each point, ask "Did you understand? Or should I explain again?" and wait for response.'
+};
+
+const PRAC_PROMPTS={
+  ur:'You are an AI coach for Medicare call center training. Respond in URDU (Roman Urdu ok). Teach the agent, then ask if they understood. When they practice in English, give feedback in Urdu.',
+  hi:'You are an AI coach. Respond in HINDI. Teach then ask if understood. Give English practice feedback in Hindi.',
+  pa:'You are an AI coach. Respond in PUNJABI. Teach then ask if understood. Give English practice feedback in Punjabi.',
+  ps:'You are an AI coach. Respond in PASHTO. Teach then ask if understood.',
+  en:'You are an AI Medicare call center coach. Respond in English. After each explanation ask if they understood or need repeat.'
+};
+
+const CALLS=[
+  {type:'easy',label:'Call 1 — Interested',dispHint:'Transferred',custFirst:'John',custLast:'Williams',custPhone:'555-847-2391',custAge:'72',custZip:'32601',
+   system:'You are John Williams, age 72, a friendly Medicare customer living at home. You have Medicare Part A and B only. You are somewhat interested in learning about benefits. Respond naturally in 1-2 sentences. Speak like a real American senior.',
+   opening:'Hello?',voice:{pitch:0.8,rate:0.85}},
+  {type:'medium',label:'Call 2 — Not Interested',dispHint:'Not Interested — After Rebuttal',custFirst:'Mary',custLast:'Johnson',custPhone:'555-293-7741',custAge:'68',custZip:'45231',
+   system:'You are Mary Johnson, age 68. You initially say you are not interested. If the agent gives a good rebuttal you become slightly open. Respond in 1-2 sentences.',
+   opening:"Hello, who's calling?",voice:{pitch:1.1,rate:0.9}},
+  {type:'dnc',label:'Call 3 — DNC Angry',dispHint:'DNC — Do Not Call',custFirst:'Robert',custLast:'Davis',custPhone:'555-118-9934',custAge:'77',custZip:'33101',
+   system:'You are Robert Davis, very angry. Immediately say "Take me off your list! Do not call me again!" Be aggressive and refuse everything.',
+   opening:"WHO IS THIS?! STOP CALLING ME!",voice:{pitch:0.7,rate:1.1}},
+  {type:'indian',label:'Call 4 — Indian Accent',dispHint:'Transferred',custFirst:'Ravi',custLast:'Patel',custPhone:'555-662-4471',custAge:'75',custZip:'90210',
+   system:'You are Ravi Patel, age 75, with Indian accent. Use Indian English phrasing like "kindly tell me", "I am having Medicare only", "please do the needful". Be somewhat interested. Respond in 1-2 sentences.',
+   opening:"Hello? Yes please, who is calling?",voice:{pitch:1.0,rate:0.8,lang:'en-IN'}},
+  {type:'poa',label:'Call 5 — No POA',dispHint:'No POA',custFirst:'Dorothy',custLast:'Smith',custPhone:'555-774-2219',custAge:'81',custZip:'77001',
+   system:'You are Dorothy Smith, age 81. Your daughter handles all your healthcare decisions and has power of attorney. Your daughter is not available right now. Respond in 1-2 sentences.',
+   opening:"Hello, this is Dorothy.",voice:{pitch:1.2,rate:0.8}}
+];
+
+function goScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function logout(){CU=null;eduDone=false;pracDone=false;lang='en';goScreen('loginScreen');document.getElementById('loginId').value='';document.getElementById('loginPass').value='';}
+
+function doLogin(){
+  const id=document.getElementById('loginId').value.trim().toLowerCase();
+  const pass=document.getElementById('loginPass').value.trim();
+  const err=document.getElementById('loginErr');
+  err.style.display='none';
+  if(USERS[id]&&USERS[id].pass===pass){
+    CU={id,...USERS[id]};
+    if(CU.role==='owner'){goScreen('adminScreen');return;}
+    if(CU.role==='verifier'){
+      document.getElementById('navName').textContent=CU.name;
+      goScreen('verifierScreen');
+      return;
+    }
+    if(CU.role==='manager'){
+      // Show ZAC branded trainee login
+      document.getElementById('loginMark').textContent=CU.logo||'ZAC';
+      document.getElementById('loginName').textContent=CU.center||'Call Center';
+      document.getElementById('loginId').value='';
+      document.getElementById('loginPass').value='';
+      CU._trainee=true;
+      return;
+    }
+  } else if(CU&&CU._trainee){
+    // Trainee login after ZAC manager
+    const tname=document.getElementById('loginId').value.trim()||'Agent';
+    document.getElementById('navName').textContent=tname;
+    document.getElementById('dashH').textContent='Welcome, '+tname+'!';
+    goScreen('langScreen');
+    return;
+  } else {
+    err.style.display='block';
+  }
+}
+
+function selectLang(code,name){
+  lang=code;langName=name;
+  document.getElementById('eduLangShow').textContent=name;
+  goScreen('dashScreen');
+  initEduChat();
+}
+
+function checkLock(t){
+  if(t==='prac'&&!eduDone){alert('Complete Medicare Education first!');return;}
+  if(t==='ver'&&!pracDone){alert('Complete Pitch Practice first!');return;}
+}
+function goEdu(){goScreen('eduScreen');initEduChat();}
+
+// EDUCATION CHAT
+let eduChatInit={};
+async function initEduChat(){
+  if(eduChatInit[1])return;
+  eduChatInit[1]=true;
+  const msgs1=document.getElementById('eduChat1');
+  await aiMsg(msgs1,'eduH1',[],LANG_PROMPTS[lang]+'\n\nThe student is now looking at Medicare Parts A, B, C, D information. Welcome them warmly and ask them to tell you which part they want to learn about first, or you can start with Part C since that is what you sell.');
+}
+
+async function aiMsg(container,histId,history,prompt,userText){
+  const loader=document.createElement('div');
+  loader.className='ai-msg';
+  loader.innerHTML='<div class="dots"><span></span><span></span><span></span></div>';
+  container.appendChild(loader);
+  container.scrollTop=container.scrollHeight;
+  const msgs=userText?[...history,{role:'user',content:userText}]:[{role:'user',content:prompt}];
+  try{
+    const r=await fetch('/.netlify/functions/claude',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:200,system:prompt||LANG_PROMPTS[lang],messages:msgs})
+    });
+    const d=await r.json();
+    loader.remove();
+    const reply=d.content?.[0]?.text||'Please try again.';
+    const div=document.createElement('div');
+    div.className='ai-msg';
+    div.textContent=reply;
+    container.appendChild(div);
+    container.scrollTop=container.scrollHeight;
+    speakText(reply);
+    return reply;
+  }catch(e){
+    loader.remove();
+    const div=document.createElement('div');
+    div.className='ai-msg';
+    div.textContent='Connection error. Please check your internet.';
+    container.appendChild(div);
+    return '';
+  }
+}
+
+let eduHistory1=[],eduHistory2=[];
+async function toggleEduMic(btnId,chatId,lesson){
+  const btn=document.getElementById(btnId);
+  const status=document.getElementById('eduMicStatus'+lesson);
+  const container=document.getElementById(chatId);
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
+    alert('Use Chrome browser for microphone support.');return;
+  }
+  if(listening){
+    if(recognition)recognition.stop();
+    btn.classList.add('muted');btn.textContent='🎤';
+    status.textContent='Click mic to speak';listening=false;return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR();
+  recognition.lang='en-US';recognition.continuous=false;recognition.interimResults=false;
+  recognition.onstart=()=>{listening=true;btn.classList.remove('muted');btn.textContent='🔴';btn.classList.add('active');status.textContent='Listening...';};
+  recognition.onresult=async e=>{
+    const t=e.results[0][0].transcript;
+    btn.classList.remove('active');btn.classList.add('muted');btn.textContent='🎤';listening=false;
+    status.textContent='Click mic to speak';
+    const um=document.createElement('div');um.className='user-msg';um.textContent=t;container.appendChild(um);container.scrollTop=container.scrollHeight;
+    const hist=lesson===1?eduHistory1:eduHistory2;
+    hist.push({role:'user',content:t});
+    const reply=await aiMsg(container,'',hist,LANG_PROMPTS[lang],t);
+    if(reply)hist.push({role:'assistant',content:reply});
+  };
+  recognition.onerror=()=>{btn.classList.add('muted');btn.textContent='🎤';listening=false;status.textContent='Error. Try again.';};
+  recognition.onend=()=>{if(listening){btn.classList.add('muted');btn.textContent='🎤';listening=false;}};
+  try{recognition.start();}catch(e){status.textContent='Mic error.';}
+}
+
+// LESSON NAV
+function goLesson(n){
+  document.getElementById('el'+curLesson).style.display='none';
+  curLesson=n;
+  document.getElementById('el'+n).style.display='block';
+  document.querySelectorAll('[id^="ep"]').forEach((s,i)=>{s.className='prog-s';if(i<n-1)s.classList.add('done');if(i===n-1)s.classList.add('active');});
+  if(n===2&&!eduChatInit[2]){
+    eduChatInit[2]=true;
+    const c=document.getElementById('eduChat2');
+    aiMsg(c,'',[],'',LANG_PROMPTS[lang]+'\n\nThe student is now looking at eligibility rules and call rules. Ask them: which customers are eligible and which are not? Guide them through the rules.');
+  }
+}
+
+// QUIZ
+function qAns(btn,qid,result){
+  document.querySelectorAll('#qq'+qid.slice(-1)+' .quiz-opt').forEach(b=>b.disabled=true);
+  btn.classList.add(result);
+  const n=parseInt(qid.slice(-1));
+  setTimeout(()=>{
+    if(n<3)document.getElementById('qq'+(n+1)).style.display='block';
+    else{document.getElementById('quizDone').style.display='block';document.getElementById('finEduBtn').style.display='inline-block';}
+  },600);
+}
+
+function finishEdu(){
+  eduDone=true;
+  document.getElementById('card-prac').classList.remove('locked');
+  document.getElementById('card-prac').onclick=()=>{goScreen('practiceScreen');initPrac();};
+  document.getElementById('prac-tag').className='mod-tag tag-green';
+  document.getElementById('prac-tag').textContent='✅ Unlocked!';
+  goScreen('practiceScreen');initPrac();
+}
+
+// PRACTICE
+const STAGE_PROMPTS=[
+  'Opening line — teach agent to say: "Hi, this is [Name] calling on a recorded line. How are you doing today?" Give feedback on their attempt.',
+  'Qualifying questions — teach all 7: name, age, zip, Medicare A+B, no VA/TRICARE/employer, living at home, decision maker.',
+  'Objection handling — max 2 rebuttals. Teach the rebuttals. When they try 3rd rebuttal, warn them.',
+  'Disclaimer — must say the full disclaimer and get YES or OKAY before transfer.'
+];
+
+let pracHistories=[[],[],[],[]];
+let pracInited=false;
+async function initPrac(){
+  if(pracInited)return;pracInited=true;
+  const c=document.getElementById('pracChat1');
+  const sysPrompt=PRAC_PROMPTS[lang]+'\n\nStage 1: '+STAGE_PROMPTS[0]+'\n\nGreet the agent and start teaching Stage 1.';
+  document.getElementById('s1coach').textContent='AI Coach is loading...';
+  const reply=await aiMsg(c,'',[],'',sysPrompt);
+  if(reply){document.getElementById('s1coach').textContent='Speak with the AI coach below';pracHistories[0].push({role:'assistant',content:reply});}
+}
+
+function goStage(n){
+  document.getElementById('ps'+curStage).style.display='none';
+  curStage=n;
+  document.getElementById('ps'+n).style.display='block';
+  document.getElementById('stageN').textContent=n;
+  document.querySelectorAll('[id^="pp"]').forEach((s,i)=>{s.className='prog-s';if(i<n-1)s.classList.add('done');if(i===n-1)s.classList.add('active');});
+  initStage(n);
+}
+
+async function initStage(n){
+  const c=document.getElementById('pracChat'+n);
+  if(c.children.length>0)return;
+  const sysPrompt=PRAC_PROMPTS[lang]+'\n\nStage '+n+': '+STAGE_PROMPTS[n-1]+'\n\nGreet agent and start this stage.';
+  document.getElementById('s'+n+'coach').textContent='AI Coach loading...';
+  const reply=await aiMsg(c,'',[],'',sysPrompt);
+  if(reply){document.getElementById('s'+n+'coach').textContent='Practice with AI coach below';pracHistories[n-1].push({role:'assistant',content:reply});}
+}
+
+async function togglePracMic(btnId,chatId,stageNum){
+  const btn=document.getElementById(btnId);
+  const status=document.getElementById('pracMicSt'+stageNum);
+  const container=document.getElementById(chatId);
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){alert('Use Chrome browser.');return;}
+  if(listening){if(recognition)recognition.stop();btn.classList.add('muted');btn.textContent='🎤';status.textContent='Click mic to speak';listening=false;return;}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR();recognition.lang='en-US';recognition.continuous=false;recognition.interimResults=false;
+  recognition.onstart=()=>{listening=true;btn.classList.remove('muted');btn.textContent='🔴';btn.classList.add('active');status.textContent='Listening...';};
+  recognition.onresult=async e=>{
+    const t=e.results[0][0].transcript;
+    btn.classList.remove('active');btn.classList.add('muted');btn.textContent='🎤';listening=false;status.textContent='Click mic to speak';
+    const um=document.createElement('div');um.className='user-msg';um.textContent=t;container.appendChild(um);container.scrollTop=container.scrollHeight;
+    const hist=pracHistories[stageNum-1];
+    hist.push({role:'user',content:t});
+    const sysP=PRAC_PROMPTS[lang]+'\n\nStage '+stageNum+': '+STAGE_PROMPTS[stageNum-1];
+    const reply=await aiMsg(container,'',hist,sysP,t);
+    if(reply){hist.push({role:'assistant',content:reply});const nav=document.getElementById('s'+stageNum+'nav');if(nav&&hist.length>=4)nav.style.display='flex';}
+  };
+  recognition.onerror=()=>{btn.classList.add('muted');btn.textContent='🎤';listening=false;status.textContent='Error. Try again.';};
+  recognition.onend=()=>{if(listening){btn.classList.add('muted');btn.textContent='🎤';listening=false;}};
+  try{recognition.start();}catch(e){status.textContent='Mic error.';}
+}
+
+function finishPrac(){
+  pracDone=true;
+  document.getElementById('card-ver').classList.remove('locked');
+  document.getElementById('card-ver').onclick=()=>goScreen('verifierScreen');
+  document.getElementById('ver-tag').className='mod-tag tag-green';
+  document.getElementById('ver-tag').textContent='✅ Unlocked!';
+  goScreen('verifierScreen');
+}
+
+// VERIFIER
+function startVerifier(){
+  vCallIdx=0;vScores=[];vSecs=0;
+  document.getElementById('verIntro').style.display='none';
+  document.getElementById('verActive').style.display='flex';
+  startVTimer();
+  loadVCall(0);
+}
+
+function startVTimer(){
+  if(vTimer)clearInterval(vTimer);
+  vTimer=setInterval(()=>{
+    vSecs++;
+    const m=String(Math.floor(vSecs/60)).padStart(2,'0');
+    const s=String(vSecs%60).padStart(2,'0');
+    document.getElementById('viciSecs').textContent=vSecs;
+    document.getElementById('vTimerR').textContent=m+':'+s;
+  },1000);
+}
+
+async function loadVCall(idx){
+  if(idx>=CALLS.length){endVerifier();return;}
+  const call=CALLS[idx];
+  vHistory=[];
+  document.getElementById('vCallNum').textContent=idx+1;
+  document.getElementById('vCallNumR').textContent=idx+1;
+  document.getElementById('vCallType').textContent=call.label;
+  document.getElementById('viciStatus').textContent='STATUS: Called — Campaign: Medicare Advantage';
+  document.getElementById('vCustFirst').value=call.custFirst;
+  document.getElementById('vCustLast').value=call.custLast;
+  document.getElementById('vCustPhone').value=call.custPhone;
+  document.getElementById('vCustAge').value=call.custAge;
+  document.getElementById('vCustZip').value=call.custZip;
+  document.getElementById('vDisp').value='';
+  const convo=document.getElementById('vConvo');
+  convo.innerHTML='<div class="dots"><span></span><span></span><span></span></div>';
+  await new Promise(r=>setTimeout(r,1000));
+  convo.innerHTML='';
+  vHistory=[{role:'user',content:'System: '+call.system+'\n\nAgent just called you. Say your opening line naturally.'},
+            {role:'assistant',content:call.opening}];
+  addVMsg('ai',call.opening,call.custFirst+' '+call.custLast);
+  speakTextVoice(call.opening,call.voice);
+}
+
+function addVMsg(type,text,label){
+  const box=document.getElementById('vConvo');
+  const dots=box.querySelector('.dots');
+  if(dots)dots.parentElement&&dots.remove&&dots.remove();
+  const div=document.createElement('div');
+  div.className=type==='ai'?'vici-convo-msg-ai':'vici-convo-msg-me';
+  div.textContent=(label?label+': ':'')+text;
+  box.appendChild(div);
+  box.scrollTop=box.scrollHeight;
+}
+
+async function vToggleMic(){
+  const btn=document.getElementById('vMicBtn');
+  const status=document.getElementById('vMicStatus');
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
+    alert('Use Chrome browser for microphone.');return;
+  }
+  if(vMicOn){
+    if(recognition)recognition.stop();
+    vMicOn=false;btn.style.background='#006600';btn.textContent='🎤 SPEAK';status.textContent='Click to speak';return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR();recognition.lang='en-US';recognition.continuous=false;recognition.interimResults=false;
+  recognition.onstart=()=>{vMicOn=true;btn.style.background='#cc0000';btn.textContent='🔴 LISTENING...';status.textContent='Listening — click to stop';};
+  recognition.onresult=async e=>{
+    const t=e.results[0][0].transcript;
+    vMicOn=false;btn.style.background='#006600';btn.textContent='🎤 SPEAK';status.textContent='Click to speak';
+    addVMsg('me',t,'Agent');
+    analyzeChecklist(t);
+    await getVAIReply(t);
+  };
+  recognition.onerror=()=>{vMicOn=false;btn.style.background='#006600';btn.textContent='🎤 SPEAK';status.textContent='Error. Try again.';};
+  recognition.onend=()=>{if(vMicOn){vMicOn=false;btn.style.background='#006600';btn.textContent='🎤 SPEAK';}};
+  try{recognition.start();}catch(e){status.textContent='Mic error.';}
+}
+
+async function getVAIReply(agentText){
+  const convo=document.getElementById('vConvo');
+  const loader=document.createElement('div');
+  loader.className='vici-convo-msg-ai';
+  loader.innerHTML='<div class="dots"><span></span><span></span><span></span></div>';
+  convo.appendChild(loader);convo.scrollTop=convo.scrollHeight;
+  vHistory.push({role:'user',content:agentText});
+  const call=CALLS[vCallIdx];
+  try{
+    const r=await fetch('/.netlify/functions/claude',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:100,system:call.system,messages:vHistory})
+    });
+    const d=await r.json();
+    loader.remove();
+    const reply=d.content?.[0]?.text||'Could you repeat that?';
+    vHistory.push({role:'assistant',content:reply});
+    addVMsg('ai',reply,call.custFirst);
+    speakTextVoice(reply,call.voice);
+  }catch(e){
+    loader.remove();
+    const fallbacks={easy:'I see, tell me more.',medium:"I'm not sure I'm interested.",dnc:"DON'T CALL ME AGAIN!",indian:'Yes yes, please continue.',poa:'My daughter handles these things.'};
+    const reply=fallbacks[call.type]||'Go on...';
+    addVMsg('ai',reply,call.custFirst);
+    speakTextVoice(reply,call.voice);
+  }
+}
+
+const chkItems=['get name','age','zip','medicare','insurance','home','decision','disclaimer'];
+const chkDone=new Set();
+function analyzeChecklist(text){
+  const t=text.toLowerCase();
+  const keys=[['name','first','last'],['age','year','old'],['zip','postal'],['medicare','part a','part b'],['insurance','va','tricare','coverage'],['home','living','house'],['decision','poa','attorney'],['consent','agree','federal','disclaimer']];
+  const cl=document.getElementById('vChecklist');
+  const items=cl.querySelectorAll('.vici-log-entry');
+  keys.forEach((kws,i)=>{
+    if(!chkDone.has(i)&&kws.some(k=>t.includes(k))){
+      chkDone.add(i);
+      if(items[i])items[i].textContent='☑ '+items[i].textContent.slice(2);
+    }
+  });
+}
+
+function toggleVMute(){
+  vMuted=!vMuted;
+  document.getElementById('muteBtn').style.background=vMuted?'#cc0000':'#666';
+  if(synth.speaking&&vMuted)synth.cancel();
+}
+
+function vHangup(){
+  const disp=document.getElementById('vDisp').value;
+  if(!disp){alert('Please select a disposition!');return;}
+  const call=CALLS[vCallIdx];
+  const dispMap={'Transferred — License Agent':95,'Not Interested — After Rebuttal':80,'DNC — Do Not Call':90,'No POA':85,'Not Eligible — VA/TRICARE':90};
+  let score=dispMap[disp]||55;
+  const chkScore=(chkDone.size/8)*30;
+  score=Math.min(100,Math.round(score*0.7+chkScore));
+  vScores.push(score);
+  const log=document.getElementById('scoreLog');
+  log.innerHTML+=`<div class="vici-log-entry">Call ${vCallIdx+1}: ${score}%</div>`;
+  const avg=Math.round(vScores.reduce((a,b)=>a+b,0)/vScores.length);
+  document.getElementById('vOverallScore').textContent='Overall: '+avg+'%';
+  chkDone.clear();
+  const cl=document.getElementById('vChecklist');
+  cl.querySelectorAll('.vici-log-entry').forEach(i=>{if(i.textContent.startsWith('☑'))i.textContent='☐'+i.textContent.slice(1);});
+  vCallIdx++;
+  if(vCallIdx>=CALLS.length)endVerifier();
+  else loadVCall(vCallIdx);
+}
+
+function endVerifier(){
+  if(vTimer)clearInterval(vTimer);
+  synth.cancel();
+  const avg=Math.round(vScores.reduce((a,b)=>a+b,0)/vScores.length);
+  const pass=avg>=70;
+  document.getElementById('rScore').textContent=avg;
+  document.getElementById('rStatus').textContent=pass?'PASS ✅':'FAIL ❌';
+  document.getElementById('rStatus').className='res-status '+(pass?'res-pass':'res-fail');
+  document.getElementById('rMsg').textContent=pass?'Excellent! You passed the Verifier Test.':'Score below 70%. Practice more and retry.';
+  const fb=[];
+  if(pass)fb.push('✅ You handled all 5 calls professionally.');
+  else fb.push('❌ Need improvement. Review Medicare Education and Practice.');
+  fb.push('📋 Call scores: '+vScores.join(', '));
+  document.getElementById('rFeed').innerHTML=fb.join('<br><br>');
+  document.getElementById('rm1').textContent=Math.round(avg/10)+'/10';
+  document.getElementById('rm2').textContent=Math.round(avg/12)+'/10';
+  document.getElementById('rm3').textContent=Math.round(avg/11)+'/10';
+  goScreen('resultsScreen');
+}
+
+function showCert(){
+  const name=document.getElementById('navName').textContent||CU?.name||'Agent';
+  const score=document.getElementById('rScore').textContent;
+  document.getElementById('certName').textContent=name;
+  document.getElementById('certScore').textContent='Score: '+score+'/100';
+  document.getElementById('certDate').textContent=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('certId').textContent='#MC-'+Date.now().toString().slice(-6);
+  goScreen('certScreen');
+}
+
+// SPEECH
+function speakText(text){
+  if(synth.speaking)synth.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.rate=0.88;u.pitch=1;
+  synth.speak(u);
+}
+
+function speakTextVoice(text,voice){
+  if(vMuted)return;
+  if(synth.speaking)synth.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.rate=voice?.rate||0.88;
+  u.pitch=voice?.pitch||1;
+  if(voice?.lang)u.lang=voice.lang;
+  synth.speak(u);
+}
+
+// ADMIN
+function aTab(n,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-p').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tp-'+n).classList.add('active');
+}
+function addT(){
+  const n=document.getElementById('nN').value.trim();
+  const i=document.getElementById('nI').value.trim();
+  if(!n||!i){alert('Fill name and ID');return;}
+  const r=document.createElement('div');r.className='tbl-r';r.style.gridTemplateColumns='2fr 1.5fr 1fr 1fr 1fr 1fr';
+  r.innerHTML=`<div>${n}</div><div style="color:var(--muted);">${i}</div><div><span class="pill pill-a">Active</span></div><div style="color:var(--muted);">Day 1</div><div><span class="pill" style="background:rgba(120,120,120,.1);color:var(--muted);">—</span></div><div style="display:flex;gap:5px;"><button class="btn-xs" onclick="alert('Reset done')">Reset</button><button class="btn-xs" onclick="this.closest('.tbl-r').remove()">Remove</button></div>`;
+  document.getElementById('tRows').appendChild(r);
+  document.getElementById('nN').value='';document.getElementById('nI').value='';
+  document.getElementById('addF').classList.remove('open');
+  document.getElementById('as1').textContent=document.querySelectorAll('#tRows .tbl-r').length;
+}
+
+// ENTER KEY
+document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+// Update ViciDial date
+setInterval(()=>{
+  const now=new Date();
+  document.getElementById('viciDate').textContent=now.toISOString().slice(0,19).replace('T',' ');
+},1000);
+</script>
+</body>
+</html>
